@@ -60,8 +60,7 @@ const inflateTree: RouteOptions = {
         }
 
         const parentNode = allNodes.get(`${node.parent_id}`)
-        if (!parentNode) throw new Error()
-        if (parentNode.level !== node.level - 1) throw new Error()
+        if (parentNode?.level !== node.level - 1) throw new Error()
       }
 
       return flattenedTree
