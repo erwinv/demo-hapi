@@ -1,9 +1,10 @@
 import Hapi, { ServerOptions } from '@hapi/hapi'
+import { registerRoutes } from './router'
 
 export default function App(options: ServerOptions = {}) {
   const server = Hapi.server(options)
 
-  // register route handlers
+  registerRoutes(server)
 
   return server
 }
