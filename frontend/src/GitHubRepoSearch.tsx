@@ -15,6 +15,7 @@ import {
   ListItemAvatar,
   Pagination,
   Snackbar,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { Book as BookIcon } from '@mui/icons-material'
@@ -33,7 +34,7 @@ interface Repo {
   topics: string[]
   stargazers_count: number
   language: string
-  updated_at: string
+  pushed_at: string
 }
 
 export default function GitHubRepoSearch() {
@@ -97,7 +98,11 @@ export default function GitHubRepoSearch() {
                     </Typography>
                     <Typography variant="caption">
                       ☆ {formatCount(repo?.stargazers_count ?? 0)} Updated{' '}
-                      {formatDateTime(repo?.updated_at ?? '')}
+                      <Tooltip
+                        title={formatDateTime(repo?.pushed_at ?? '', 'full')}
+                      >
+                        <span>{formatDateTime(repo?.pushed_at ?? '')}</span>
+                      </Tooltip>
                     </Typography>
                   </>
                 }

@@ -23,15 +23,20 @@ export function formatCount(x: number) {
   )
 }
 
-export function formatDateTime(isoDateTime: string) {
+export function formatDateTime(
+  isoDateTime: string,
+  format: 'human' | 'full' = 'human'
+) {
   const dateTime = DateTime.fromISO(isoDateTime)
   if (!dateTime.isValid) return ''
 
-  const defaultFormat = dateTime.toFormat('MMM d, yyyy')
+  const defaultFormat = dateTime.toFormat('DD')
+
+  if (format === 'full') return dateTime.toFormat('fff')
 
   const diffNow = dateTime.diffNow().negate()
   if (diffNow < Duration.fromObject({ days: 8 })) {
-    return dateTime.toRelative()
+    return dateTime.toRelative()!
   }
 
   return `on ${defaultFormat}`
