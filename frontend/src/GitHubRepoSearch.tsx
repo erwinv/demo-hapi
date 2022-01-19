@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Alert,
+  AlertTitle,
   Avatar,
   Backdrop,
+  Button,
   Box,
   CircularProgress,
   Divider,
@@ -13,12 +15,14 @@ import {
   ListItemAvatar,
   Pagination,
   Snackbar,
-  TextField,
   Typography,
 } from '@mui/material'
 import { Book as BookIcon } from '@mui/icons-material'
 import Emoji from 'react-emoji-render'
+import useSWR from 'swr'
 import { formatDateTime, formatCount } from './util'
+import keepPrevious from './keepPrevious'
+import { useSearchBox } from './useSearchBox'
 
 interface Repo {
   id: number
@@ -33,57 +37,38 @@ interface Repo {
 }
 
 export default function GitHubRepoSearch() {
-  const [searchText, setSearchText] = useState('nodejs')
-  const [searchTrigger, setSearchTrigger] = useState(false)
   const [page, setPage] = useState(1)
-  const pageRef = useRef(page)
-  const [total, setTotal] = useState(0)
-  const [repos, setRepos] = useState<Partial<Repo>[]>([])
-  const [loading, setLoading] = useState(false)
-  const [rateLimited, setRateLimited] = useState(false)
+  const [searchText, searchBox] = useSearchBox()
 
-  useEffect(() => {
-    const controller = new AbortController()
+  useEffect(() => setPage(1), [searchText])
 
-    ;(async () => {
-      setLoading(true)
-      const response = await fetch(
-        `https://api.github.com/search/repositories?q=${encodeURIComponent(
-          searchText
-        )}&per_page=10&page=${page}`,
-        { signal: controller.signal }
-      ).finally(() => setLoading(false))
+  const apiUrl = `https://api.github.com/search/repositories?q=${encodeURIComponent(
+    searchText
+  )}&per_page=10&page=${page}`
 
-      if (response.status === 403) {
-        setRateLimited(true)
-      } else if (response.status === 200) {
-        pageRef.current = page
-        const data = await response.json()
-        setTotal(data.total_count)
-        setRepos(data.items)
-      }
-    })()
+  const fetcher = async (url: string) => {
+    const res = await fetch(url)
 
-    return () => {
-      controller.abort()
+    if (!res.ok) {
+      const error = await res.json()
+      throw error
     }
-  }, [page, searchTrigger])
+
+    return res.json()
+  }
+
+  const { data, error, isLoading, isPrevious } = useSWR(apiUrl, fetcher, {
+    use: [keepPrevious],
+    errorRetryInterval: 20000,
+    errorRetryCount: 3,
+  }) as any
+
+  const total: number = data?.total_count ?? 0
+  const repos: Partial<Repo>[] = data?.items ?? []
 
   return (
     <Box position="relative">
-      <TextField
-        fullWidth
-        label="Search"
-        value={searchText}
-        onChange={(ev) => setSearchText(ev.target.value)}
-        onKeyPress={(ev) => {
-          if (ev.key === 'Enter') {
-            ev.preventDefault()
-            if (page !== 1) setPage(1)
-            else setSearchTrigger(!searchTrigger)
-          }
-        }}
-      />
+      {searchBox}
       <List>
         {repos.map((repo, i) => (
           <>
@@ -125,23 +110,28 @@ export default function GitHubRepoSearch() {
         sx={{ display: 'flex', justifyContent: 'center' }}
         size="large"
         count={Math.ceil(Math.min(total, 1000) / 10)}
-        page={pageRef.current}
+        page={page}
         onChange={(_, page) => setPage(page)}
+        disabled={error && !isPrevious}
       />
-      <Backdrop open={loading} sx={{ position: 'absolute' }}>
+      <Backdrop open={isLoading} sx={{ position: 'absolute' }}>
         <CircularProgress size={80} />
       </Backdrop>
-      <Snackbar
-        open={rateLimited}
-        autoHideDuration={60 * 1000}
-        onClose={() => setRateLimited(false)}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-      >
-        <Alert severity="warning">
-          GitHub API rate limit exceeded! Please try again after 1 minute.
+      <Snackbar open={!!error} autoHideDuration={60 * 1000}>
+        <Alert
+          severity="warning"
+          action={
+            <Button
+              href={error?.documentation_url}
+              target="_blank"
+              rel="noopener"
+            >
+              Docs
+            </Button>
+          }
+        >
+          {isPrevious && <AlertTitle>Showing Stale Data</AlertTitle>}
+          {error?.message.replace(/\(.*\)/, '')}
         </Alert>
       </Snackbar>
     </Box>
