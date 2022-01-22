@@ -1,9 +1,10 @@
 import _ from 'lodash'
 import App from './app'
 
-const app = App()
+const [app, setup] = App()
 
 beforeAll(async () => {
+  await setup()
   await app.initialize()
 })
 afterAll(async () => {

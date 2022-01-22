@@ -43,7 +43,7 @@ export default function GitHubRepoSearch() {
 
   useEffect(() => setPage(1), [searchText])
 
-  const apiUrl = `https://api.github.com/search/repositories?q=${encodeURIComponent(
+  const apiUrl = `/api/github/search/repositories?q=${encodeURIComponent(
     searchText
   )}&per_page=10&page=${page}`
 
@@ -60,6 +60,7 @@ export default function GitHubRepoSearch() {
 
   const { data, error, isLoading, isPrevious } = useSWR(apiUrl, fetcher, {
     use: [keepPrevious],
+    // TODO onErrorRetry based on X-RateLimit-Reset
     errorRetryInterval: 20000,
     errorRetryCount: 3,
   }) as any
