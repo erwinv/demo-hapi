@@ -43,7 +43,7 @@ export default function GitHubRepoSearch() {
 
   useEffect(() => setPage(1), [searchText])
 
-  const apiUrl = `/api/github/search/repositories?q=${encodeURIComponent(
+  const apiUrl = `/api/proxy/github/search/repositories?q=${encodeURIComponent(
     searchText
   )}&per_page=10&page=${page}`
 

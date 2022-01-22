@@ -1,68 +1,92 @@
 import _ from 'lodash'
+import Joi from 'joi'
+import examples from './tree-example'
 
-export interface TreeNode {
+const nodeSchema = Joi.object({
+  id: Joi.number().required(),
+  title: Joi.string().required(),
+  level: Joi.number().required(),
+  parent_id: Joi.number().allow(null).required(),
+})
+  .unknown(true)
+  .label('Node')
+
+const levelNodesSchema = Joi.array().items(nodeSchema).label('LevelNodes')
+
+export const flattenedTreeSchema = Joi.object({
+  0: levelNodesSchema.length(1),
+  1: levelNodesSchema,
+})
+  .pattern(Joi.number().label('levelId'), levelNodesSchema)
+  .label('FlattenedTree')
+  .example(examples.flattenedTree)
+
+export const treeSchema = nodeSchema
+  .keys({
+    children: Joi.array().items(nodeSchema, Joi.link('#tree')),
+  })
+  .id('tree')
+  .label('Tree')
+  .example(examples.inflatedTree)
+
+export interface Node {
   id: number
   level: number
   title: string
   parent_id: number
 }
 
-export type Tree = TreeNode & {
+export type Tree = Node & {
   children: Tree[]
 }
 
-export interface RawNode extends TreeNode {
+export interface RawNode extends Node {
   children: []
 }
 
 export interface FlattenedTree {
-  [level: `${number}`]: RawNode[]
+  [levelId: `${number}`]: RawNode[]
 }
 
 export function inflate(flattenedTree: FlattenedTree): Tree {
-  const allNodes = new Map<number, Tree>()
-  Object.values(flattenedTree)
-    .flat()
-    .forEach((node: RawNode) => {
-      allNodes.set(node.id, node)
-    })
+  const allNodes: RawNode[] = Object.values(flattenedTree).flat()
 
-  let rootId = 0
+  const nodeMap = new Map(
+    allNodes.map((node) => [node.id, node as Tree] as const)
+  )
 
-  for (const level of Object.keys(flattenedTree)) {
-    if (level === '0') {
-      rootId = flattenedTree[level][0].id
-      continue
-    }
+  const rootId = flattenedTree['0'][0].id
 
-    const thisLevelNodes = flattenedTree[level as keyof FlattenedTree]
+  const childrenGroupedByParent = _.groupBy(
+    allNodes.filter((node) => _.isNumber(node.parent_id)),
+    'parent_id'
+  )
 
-    const childrenGroupedByParent = _.groupBy(thisLevelNodes, 'parent_id')
+  for (const parentId of Object.keys(childrenGroupedByParent)) {
+    const parent = nodeMap.get(Number(parentId))
+    const children = childrenGroupedByParent[parentId]
 
-    for (const parentId of Object.keys(childrenGroupedByParent)) {
-      const parent = allNodes.get(Number(parentId)) as Tree
-      parent.children = childrenGroupedByParent[parentId]
-    }
+    if (!parent) continue
+    if (!parent.children) parent.children = []
+
+    parent.children.push(...children)
   }
 
-  return allNodes.get(rootId) as Tree
+  return nodeMap.get(rootId) as Tree
 }
 
 export function flatten(tree: Tree): FlattenedTree {
-  const flattenedTree = {} as FlattenedTree
-  for (const nodes of walk(tree)) {
-    const levelId = `${nodes[0].level}` as keyof FlattenedTree
-    if (!flattenedTree[levelId]) flattenedTree[levelId] = []
-    flattenedTree[levelId].push(...nodes)
-  }
-  return flattenedTree
+  const allNodes = [...walk(tree)]
+  return _.groupBy(allNodes, 'level')
 }
 
-function* walk(tree: Tree): Iterable<RawNode[]> {
-  if (tree.level === 0) yield [withoutChildren(tree)]
+function* walk(tree: Tree): Iterable<RawNode> {
+  if (tree.level === 0) yield withoutChildren(tree)
 
   if (tree.children.length > 0) {
-    yield tree.children.map(withoutChildren)
+    for (const child of tree.children) {
+      yield withoutChildren(child)
+    }
     for (const node of tree.children) {
       yield* walk(node)
     }
