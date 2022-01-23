@@ -33,7 +33,7 @@ export interface Node {
   id: number
   level: number
   title: string
-  parent_id: number
+  parent_id: number | null
 }
 
 export type Tree = Node & {
@@ -77,7 +77,6 @@ export function inflate(flattenedTree: FlattenedTree): Tree {
 
 export function flatten(tree: Tree): FlattenedTree {
   const allNodes = [...walk(tree)]
-  console.info(allNodes)
   return _.groupBy(allNodes, 'level')
 }
 

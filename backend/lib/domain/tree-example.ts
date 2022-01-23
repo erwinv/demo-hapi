@@ -1,3 +1,5 @@
+import { FlattenedTree, Tree } from './tree'
+
 export default {
   flattenedTree: {
     '0': [{ id: 10, title: 'House', level: 0, children: [], parent_id: null }],
@@ -11,7 +13,7 @@ export default {
       { id: 16, title: 'Door', level: 2, children: [], parent_id: 13 },
       { id: 17, title: 'Blue Window', level: 2, children: [], parent_id: 12 },
     ],
-  },
+  } as FlattenedTree,
   inflatedTree: {
     id: 10,
     title: 'House',
@@ -57,5 +59,5 @@ export default {
         children: [],
       },
     ],
-  },
+  } as Tree,
 }

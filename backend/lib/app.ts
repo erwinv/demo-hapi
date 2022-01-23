@@ -16,6 +16,10 @@ export default function App(options: ServerOptions = {}) {
       {
         plugin: HapiPino,
         options: {
+          logEvents:
+            process.env.NODE_ENV === 'production'
+              ? ['onPostStart', 'onPostStop', 'response', 'request-error']
+              : false,
           prettyPrint: process.env.NODE_ENV !== 'production',
           redact: ['req.headers.authorization'],
           logPayload: true,
