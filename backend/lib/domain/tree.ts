@@ -37,11 +37,11 @@ export interface Node {
 }
 
 export type Tree = Node & {
-  children: Tree[]
+  children?: Tree[]
 }
 
 export interface RawNode extends Node {
-  children: []
+  children?: []
 }
 
 export interface FlattenedTree {
@@ -83,12 +83,12 @@ export function flatten(tree: Tree): FlattenedTree {
 function* walk(tree: Tree, level = 0): Iterable<RawNode> {
   if (level === 0) yield withLevel(withoutChildren(tree), level)
 
-  if (tree.children?.length > 0) {
-    for (const child of tree.children) {
+  if (tree.children?.length ?? -Infinity > 0) {
+    for (const child of tree.children ?? []) {
       yield withLevel(withoutChildren(child), level + 1)
     }
-    for (const node of tree.children) {
-      yield* walk(node, level + 1)
+    for (const child of tree.children ?? []) {
+      yield* walk(child, level + 1)
     }
   }
 }
