@@ -1,7 +1,12 @@
 import _ from 'lodash'
 import nock from 'nock'
 import App from './app'
-import { FlattenedTree } from './domain/tree'
+import {
+  normalizeTree,
+  normalizeFlatTree,
+  Tree,
+  FlattenedTree,
+} from './domain/tree'
 import mockData from './domain/tree-example'
 
 const [app, setup] = App()
@@ -43,19 +48,16 @@ it('POST /api/tree/inflate 400 Bad Request', async () => {
 })
 
 it('POST /api/tree/inflate', async () => {
-  const mockPayload = _.cloneDeep(
-    mockData.flattenedTree
-  ) as unknown as FlattenedTree
-  delete mockPayload['0'][0].children
-
   const response = await app.inject({
     method: 'POST',
     url: '/api/tree/inflate',
-    payload: mockPayload,
+    payload: mockData.flattenedTree,
   })
 
   expect(response.statusCode).toBe(200)
-  expect(response.result).toMatchObject(mockData.inflatedTree)
+  expect(normalizeTree(response.result as Tree)).toMatchObject(
+    normalizeTree(mockData.inflatedTree)
+  )
 })
 
 it('POST /api/tree/flatten 400 Bad Request', async () => {
@@ -76,9 +78,9 @@ it('POST /api/tree/flatten', async () => {
   })
 
   expect(response.statusCode).toBe(200)
-  expect(
-    _.mapValues(response.result, (nodes) => _.sortBy(nodes, 'id'))
-  ).toMatchObject(mockData.flattenedTree)
+  expect(normalizeFlatTree(response.result as FlattenedTree)).toMatchObject(
+    normalizeFlatTree(mockData.flattenedTree)
+  )
 })
 
 it('GET /api/proxy/github/search/repositories', async () => {

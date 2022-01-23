@@ -1,17 +1,41 @@
 import _ from 'lodash'
-import { inflate, flatten, FlattenedTree, Tree } from './tree'
+import {
+  inflate,
+  flatten,
+  FlattenedTree,
+  Tree,
+  normalizeTree,
+  normalizeFlatTree,
+} from './tree'
 import examples from './tree-example'
 
-const inflatedTree = () => _.cloneDeep(examples.inflatedTree as Tree)
-const flattenedTree = () =>
-  _.cloneDeep(examples.flattenedTree as unknown as FlattenedTree)
+const { inflatedTree, flattenedTree } = examples
 
-it('inflate . flatten == flatten . inflate == identity', () => {
-  expect(inflate(flatten(inflatedTree()))).toEqual(inflatedTree())
+it('inflate', () => {
+  expect(normalizeTree(inflate(flattenedTree))).toEqual(
+    normalizeTree(inflatedTree)
+  )
+})
 
-  expect(
-    _.mapValues(flatten(inflate(flattenedTree())), (levelNodes) =>
-      _.sortBy(levelNodes, 'id')
-    )
-  ).toEqual(flattenedTree())
+it('flatten', () => {
+  expect(normalizeFlatTree(flatten(inflatedTree))).toEqual(
+    normalizeFlatTree(flattenedTree)
+  )
+})
+
+it('inflate . flatten == identity', () => {
+  const inflateAfterFlatten = (tree: Tree) => inflate(flatten(tree))
+
+  expect(normalizeTree(inflateAfterFlatten(inflatedTree))).toEqual(
+    normalizeTree(inflatedTree)
+  )
+})
+
+it('flatten . inflate == identity', () => {
+  const flattenAfterInflate = (flatTree: FlattenedTree) =>
+    flatten(inflate(flatTree))
+
+  expect(normalizeFlatTree(flattenAfterInflate(flattenedTree))).toEqual(
+    normalizeFlatTree(flattenedTree)
+  )
 })
