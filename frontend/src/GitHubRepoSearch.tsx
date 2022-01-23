@@ -25,7 +25,7 @@ import { formatDateTime, formatCount } from './util'
 import keepPrevious from './keepPrevious'
 import { useSearchBox } from './useSearchBox'
 
-interface Repo {
+export interface Repo {
   id: number
   name: string
   full_name: string
@@ -33,7 +33,6 @@ interface Repo {
   description: string
   topics: string[]
   stargazers_count: number
-  language: string
   pushed_at: string
 }
 
