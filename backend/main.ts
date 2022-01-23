@@ -5,6 +5,9 @@ async function main() {
   const [app, setup] = App({
     host: process.env.HOST ?? 'localhost',
     port: process.env.PORT,
+    debug: {
+      request: ['error', 'uncaught'],
+    },
   })
 
   await setup()

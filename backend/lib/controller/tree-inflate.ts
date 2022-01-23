@@ -9,6 +9,9 @@ import {
 const inflateTree: RouteOptions = {
   validate: {
     payload: flattenedTreeSchema,
+    failAction: (_, __, err) => {
+      throw err
+    },
   },
   response: {
     schema: treeSchema,

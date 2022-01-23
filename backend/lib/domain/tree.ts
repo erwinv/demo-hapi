@@ -4,8 +4,8 @@ import examples from './tree-example'
 
 const nodeSchema = Joi.object({
   id: Joi.number().required(),
-  title: Joi.string().required(),
-  level: Joi.number().required(),
+  title: Joi.string(),
+  level: Joi.number(),
   parent_id: Joi.number().allow(null).required(),
 })
   .unknown(true)
@@ -14,7 +14,7 @@ const nodeSchema = Joi.object({
 const levelNodesSchema = Joi.array().items(nodeSchema).label('LevelNodes')
 
 export const flattenedTreeSchema = Joi.object({
-  0: levelNodesSchema.length(1),
+  0: levelNodesSchema.length(1).required(),
   1: levelNodesSchema,
 })
   .pattern(Joi.number().label('levelId'), levelNodesSchema)
@@ -55,7 +55,7 @@ export function inflate(flattenedTree: FlattenedTree): Tree {
     allNodes.map((node) => [node.id, node as Tree] as const)
   )
 
-  const rootId = flattenedTree['0'][0].id
+  const rootId = flattenedTree['0']?.[0].id
 
   const childrenGroupedByParent = _.groupBy(
     allNodes.filter((node) => _.isNumber(node.parent_id)),
@@ -72,27 +72,36 @@ export function inflate(flattenedTree: FlattenedTree): Tree {
     parent.children.push(...children)
   }
 
-  return nodeMap.get(rootId) as Tree
+  return (nodeMap.get(rootId) as Tree) ?? {}
 }
 
 export function flatten(tree: Tree): FlattenedTree {
   const allNodes = [...walk(tree)]
+  console.info(allNodes)
   return _.groupBy(allNodes, 'level')
 }
 
-function* walk(tree: Tree): Iterable<RawNode> {
-  if (tree.level === 0) yield withoutChildren(tree)
+function* walk(tree: Tree, level = 0): Iterable<RawNode> {
+  if (level === 0) yield withLevel(withoutChildren(tree), level)
 
-  if (tree.children.length > 0) {
+  if (tree.children?.length > 0) {
     for (const child of tree.children) {
-      yield withoutChildren(child)
+      yield withLevel(withoutChildren(child), level + 1)
     }
     for (const node of tree.children) {
-      yield* walk(node)
+      yield* walk(node, level + 1)
     }
   }
 }
 
-function withoutChildren(tree: Tree): RawNode {
-  return { ...tree, children: [] }
+function withoutChildren<N extends Node>(node: N): RawNode {
+  return { ...node, children: [] }
+}
+
+function withLevel<N extends Node>(node: N, level: number): N {
+  if (_.isNumber(node.level)) {
+    return node
+  }
+
+  return { ...node, level }
 }
