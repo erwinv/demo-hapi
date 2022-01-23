@@ -8,8 +8,13 @@ export function registerRoutes(app: Hapi.Server) {
   app.route([
     {
       method: 'GET',
-      path: '/',
-      handler: () => ({ status: 'OK' }),
+      path: '/{path*}',
+      handler: {
+        directory: {
+          path: '.',
+          index: true,
+        },
+      },
     },
     {
       method: 'POST',

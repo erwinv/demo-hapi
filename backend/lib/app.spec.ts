@@ -27,14 +27,6 @@ afterEach(() => {
   }
 })
 
-it('GET /', async () => {
-  const response = await app.inject('/')
-  expect(response).toMatchObject({
-    statusCode: 200,
-    result: { status: 'OK' },
-  })
-})
-
 it('POST /api/tree/inflate 400 Bad Request', async () => {
   const response = await app.inject({
     method: 'POST',

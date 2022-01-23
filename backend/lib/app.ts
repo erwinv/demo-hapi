@@ -1,3 +1,4 @@
+import { join as joinPath } from 'path'
 import Hapi, { ServerOptions } from '@hapi/hapi'
 import H2o2 from '@hapi/h2o2'
 import Inert from '@hapi/inert'
@@ -7,7 +8,14 @@ import HapiSwagger, { RegisterOptions as SwaggerOptions } from 'hapi-swagger'
 import { registerRoutes } from './router'
 
 export default function App(options: ServerOptions = {}) {
-  const server = Hapi.server(options)
+  const server = Hapi.server({
+    ...options,
+    routes: {
+      files: {
+        relativeTo: joinPath(__dirname, '../../../frontend/build'),
+      },
+    },
+  })
 
   const setup = async () => {
     await server.register([H2o2, Inert, Vision])
