@@ -2,7 +2,7 @@ import Hapi from '@hapi/hapi'
 
 import inflateTree from './controller/tree-inflate'
 import flattenTree from './controller/tree-flatten'
-import githubApi from './controller/github-api'
+import proxyGithubSearchApi from './controller/github-search-api'
 
 export function registerRoutes(app: Hapi.Server) {
   app.route([
@@ -39,8 +39,11 @@ export function registerRoutes(app: Hapi.Server) {
     },
     {
       method: 'GET',
-      path: '/api/proxy/github/{path*}',
-      options: { ...githubApi, tags: ['api', 'GitHub Proxy API'] },
+      path: '/api/proxy/github/search/{resource}',
+      options: {
+        ...proxyGithubSearchApi,
+        tags: ['api', 'GitHub Search API Proxy'],
+      },
     },
   ])
 }
