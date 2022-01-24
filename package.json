@@ -1,13 +1,11 @@
 {
   "name": "demo-hapi",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run build --workspaces",
+    "start": "npm run start -w backend"
   },
-  "author": "",
-  "license": "ISC",
   "workspaces": [
     "backend",
     "frontend"
