@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import nock from 'nock'
 import App from './app'
 import {
