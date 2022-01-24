@@ -2,39 +2,17 @@ import React, { useEffect, useState } from 'react'
 import {
   Alert,
   AlertTitle,
-  Avatar,
   Backdrop,
   Button,
   Box,
   CircularProgress,
-  Divider,
-  Link,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
   Pagination,
   Snackbar,
-  Tooltip,
-  Typography,
 } from '@mui/material'
-import { Book as BookIcon } from '@mui/icons-material'
-import Emoji from 'react-emoji-render'
 import useSWR from 'swr'
-import { formatDateTime, formatCount } from './util'
 import keepPrevious from './keepPrevious'
 import { useSearchBox } from './useSearchBox'
-
-export interface Repo {
-  id: number
-  name: string
-  full_name: string
-  html_url: string
-  description: string
-  topics: string[]
-  stargazers_count: number
-  pushed_at: string
-}
+import GitHubRepoList, { Repo } from './GitHubRepoList'
 
 export default function GitHubRepoSearch() {
   const [page, setPage] = useState(1)
@@ -65,52 +43,12 @@ export default function GitHubRepoSearch() {
   }) as any
 
   const total: number = data?.total_count ?? 0
-  const repos: Partial<Repo>[] = data?.items ?? []
+  const repos: Repo[] = data?.items ?? []
 
   return (
     <Box position="relative">
       {searchBox}
-      <List>
-        {repos.map((repo, i) => (
-          <>
-            {i > 0 && <Divider variant="inset" component="li" />}
-            <ListItem key={repo.id} alignItems="flex-start">
-              <ListItemAvatar>
-                <Avatar alt={repo.name}>
-                  <BookIcon />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                primary={
-                  <Link
-                    href={repo.html_url}
-                    underline="hover"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    {repo.full_name}
-                  </Link>
-                }
-                secondary={
-                  <>
-                    <Typography>
-                      <Emoji text={repo.description ?? ''} />
-                    </Typography>
-                    <Typography variant="caption">
-                      ☆ {formatCount(repo?.stargazers_count ?? 0)} Updated{' '}
-                      <Tooltip
-                        title={formatDateTime(repo?.pushed_at ?? '', 'full')}
-                      >
-                        <span>{formatDateTime(repo?.pushed_at ?? '')}</span>
-                      </Tooltip>
-                    </Typography>
-                  </>
-                }
-              />
-            </ListItem>
-          </>
-        ))}
-      </List>
+      <GitHubRepoList repos={repos} />
       <Pagination
         sx={{ display: 'flex', justifyContent: 'center' }}
         size="large"

@@ -4,7 +4,7 @@ import { setupServer } from 'msw/node'
 import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import App from './App'
-import { Repo } from './GitHubRepoSearch'
+import { Repo } from './GitHubRepoList'
 
 const mockRepos: Repo[] = [
   {
