@@ -14,15 +14,18 @@ import keepPrevious from './keepPrevious'
 import { useSearchBox } from './useSearchBox'
 import GitHubRepoList, { Repo } from './GitHubRepoList'
 
+const baseApiUrl = new URL('https://demo.erwinv.app')
+
 export default function GitHubRepoSearch() {
   const [page, setPage] = useState(1)
   const [searchText, searchBox] = useSearchBox()
 
   useEffect(() => setPage(1), [searchText])
 
-  const apiUrl = `/api/proxy/github/search/repositories?q=${encodeURIComponent(
-    searchText
-  )}&per_page=10&page=${page}`
+  const apiUrl = new URL('/api/proxy/github/search/repositories', baseApiUrl)
+  apiUrl.searchParams.set('q', searchText)
+  apiUrl.searchParams.set('per_page', `${10}`)
+  apiUrl.searchParams.set('page', `${page}`)
 
   const fetcher = async (url: string) => {
     const res = await fetch(url)
@@ -35,7 +38,7 @@ export default function GitHubRepoSearch() {
     return res.json()
   }
 
-  const { data, error, isLoading, isPrevious } = useSWR(apiUrl, fetcher, {
+  const { data, error, isLoading, isPrevious } = useSWR(apiUrl.href, fetcher, {
     use: [keepPrevious],
     // TODO onErrorRetry based on X-RateLimit-Reset
     errorRetryInterval: 20000,
