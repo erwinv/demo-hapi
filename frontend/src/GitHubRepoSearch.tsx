@@ -1,18 +1,9 @@
-import React, { useEffect, useState } from 'react'
-import {
-  Alert,
-  AlertTitle,
-  Backdrop,
-  Button,
-  Box,
-  CircularProgress,
-  Pagination,
-  Snackbar,
-} from '@mui/material'
+import { Box } from '@mui/joy'
+import { useEffect, useState } from 'react'
 import useSWR from 'swr'
+import GitHubRepoList, { Repo } from './GitHubRepoList'
 import keepPrevious from './keepPrevious'
 import { useSearchBox } from './useSearchBox'
-import GitHubRepoList, { Repo } from './GitHubRepoList'
 
 const baseApiUrl = new URL('https://demo.erwinv.app')
 
@@ -52,18 +43,18 @@ export default function GitHubRepoSearch() {
     <Box position="relative">
       {searchBox}
       <GitHubRepoList repos={repos} />
-      <Pagination
+      {/* <Pagination
         sx={{ display: 'flex', justifyContent: 'center' }}
         size="large"
         count={Math.ceil(Math.min(total, 1000) / 10)}
         page={page}
         onChange={(_, page) => setPage(page)}
         disabled={error && !isPrevious}
-      />
-      <Backdrop open={isLoading} sx={{ position: 'absolute' }}>
+      /> */}
+      {/* <Backdrop open={isLoading} sx={{ position: 'absolute' }}>
         <CircularProgress size={80} />
-      </Backdrop>
-      <Snackbar open={!!error} autoHideDuration={60 * 1000}>
+      </Backdrop> */}
+      {/* <Snackbar open={!!error} autoHideDuration={60 * 1000}>
         <Alert
           severity="warning"
           action={
@@ -79,7 +70,7 @@ export default function GitHubRepoSearch() {
           {isPrevious && <AlertTitle>Showing Stale Data</AlertTitle>}
           {error?.message.replace(/\(.*\)/, '')}
         </Alert>
-      </Snackbar>
+      </Snackbar> */}
     </Box>
   )
 }

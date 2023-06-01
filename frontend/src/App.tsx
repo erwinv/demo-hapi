@@ -1,5 +1,4 @@
-import React from 'react'
-import { Box, Container } from '@mui/material'
+import { Box, Container } from '@mui/joy'
 import GitHubRepoSearch from './GitHubRepoSearch'
 
 export default function App() {

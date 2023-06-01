@@ -1,18 +1,20 @@
-import React from 'react'
+import { Book } from '@mui/icons-material'
 import {
   Avatar,
-  Divider,
   Link,
   List,
+  ListDivider,
   ListItem,
-  ListItemAvatar,
-  ListItemText,
+  ListItemButton,
+  ListItemContent,
+  ListItemDecorator,
   Tooltip,
   Typography,
-} from '@mui/material'
-import { Book as BookIcon } from '@mui/icons-material'
+  listItemDecoratorClasses,
+} from '@mui/joy'
+import React from 'react'
 import Emoji from 'react-emoji-render'
-import { formatDateTime, formatCount } from './util'
+import { formatCount, formatDateTime } from './util'
 
 export interface Repo {
   id: number
@@ -31,43 +33,43 @@ interface GitHubRepoListProps {
 
 const GitHubRepoList: React.FC<GitHubRepoListProps> = ({ repos }) => {
   return (
-    <List>
+    <List
+      sx={{
+        '--ListItemDecorator-size': '3.5rem',
+        [`.${listItemDecoratorClasses.root}`]: {
+          alignSelf: 'start',
+        },
+      }}
+    >
       {repos.map((repo, i) => (
         <>
-          {i > 0 && <Divider variant="inset" component="li" />}
-          <ListItem key={repo.id} alignItems="flex-start">
-            <ListItemAvatar>
-              <Avatar alt={repo.name}>
-                <BookIcon />
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText
-              primary={
-                <Link
-                  href={repo.html_url}
-                  underline="hover"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  {repo.full_name}
-                </Link>
-              }
-              secondary={
-                <>
-                  <Typography>
-                    <Emoji text={repo.description ?? ''} />
-                  </Typography>
-                  <Typography variant="caption">
-                    ☆ {formatCount(repo?.stargazers_count ?? 0)} Updated{' '}
-                    <Tooltip
-                      title={formatDateTime(repo?.pushed_at ?? '', 'full')}
-                    >
-                      <span>{formatDateTime(repo?.pushed_at ?? '')}</span>
-                    </Tooltip>
-                  </Typography>
-                </>
-              }
-            />
+          {i > 0 && <ListDivider inset="startContent" />}
+          <ListItem key={repo.id}>
+            <ListItemButton>
+              <ListItemDecorator>
+                <Avatar alt={repo.name}>
+                  <Book />
+                </Avatar>
+              </ListItemDecorator>
+              <ListItemContent>
+                <Typography>
+                  <Link overlay href={repo.html_url} target="_blank">
+                    {repo.full_name}
+                  </Link>
+                </Typography>
+
+                <Typography level="body2">
+                  <Emoji text={repo.description ?? ''} />
+                </Typography>
+
+                <Typography level="body3">
+                  ☆ {formatCount(repo?.stargazers_count ?? 0)} Updated{' '}
+                  <Tooltip title={formatDateTime(repo?.pushed_at ?? '', 'full')}>
+                    <Typography>{formatDateTime(repo?.pushed_at ?? '')}</Typography>
+                  </Tooltip>
+                </Typography>
+              </ListItemContent>
+            </ListItemButton>
           </ListItem>
         </>
       ))}
