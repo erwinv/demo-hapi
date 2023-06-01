@@ -1,4 +1,4 @@
-import { Box } from '@mui/joy'
+import { Box, LinearProgress } from '@mui/joy'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import GitHubRepoList, { Repo } from './GitHubRepoList'
@@ -29,20 +29,24 @@ export default function GitHubRepoSearch() {
     return res.json()
   }
 
-  const { data, error, isLoading, isPrevious } = useSWR(apiUrl.href, fetcher, {
+  const {
+    data,
+    isLoading,
+    // , error, isPrevious
+  } = useSWR(apiUrl.href, fetcher, {
     use: [keepPrevious],
     // TODO onErrorRetry based on X-RateLimit-Reset
     errorRetryInterval: 20000,
     errorRetryCount: 3,
   }) as any
 
-  const total: number = data?.total_count ?? 0
+  // const total: number = data?.total_count ?? 0
   const repos: Repo[] = data?.items ?? []
 
   return (
     <Box position="relative">
       {searchBox}
-      <GitHubRepoList repos={repos} />
+      {isLoading ? <LinearProgress /> : <GitHubRepoList repos={repos} />}
       {/* <Pagination
         sx={{ display: 'flex', justifyContent: 'center' }}
         size="large"
@@ -51,9 +55,6 @@ export default function GitHubRepoSearch() {
         onChange={(_, page) => setPage(page)}
         disabled={error && !isPrevious}
       /> */}
-      {/* <Backdrop open={isLoading} sx={{ position: 'absolute' }}>
-        <CircularProgress size={80} />
-      </Backdrop> */}
       {/* <Snackbar open={!!error} autoHideDuration={60 * 1000}>
         <Alert
           severity="warning"

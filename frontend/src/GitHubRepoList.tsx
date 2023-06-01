@@ -12,7 +12,7 @@ import {
   Typography,
   listItemDecoratorClasses,
 } from '@mui/joy'
-import React from 'react'
+import React, { Fragment } from 'react'
 import Emoji from 'react-emoji-render'
 import { formatCount, formatDateTime } from './util'
 
@@ -42,7 +42,7 @@ const GitHubRepoList: React.FC<GitHubRepoListProps> = ({ repos }) => {
       }}
     >
       {repos.map((repo, i) => (
-        <>
+        <Fragment key={i}>
           {i > 0 && <ListDivider inset="startContent" />}
           <ListItem key={repo.id}>
             <ListItemButton>
@@ -71,7 +71,7 @@ const GitHubRepoList: React.FC<GitHubRepoListProps> = ({ repos }) => {
               </ListItemContent>
             </ListItemButton>
           </ListItem>
-        </>
+        </Fragment>
       ))}
     </List>
   )
