@@ -1,20 +1,7 @@
-import { Book } from '@mui/icons-material'
-import {
-  Avatar,
-  Link,
-  List,
-  ListDivider,
-  ListItem,
-  ListItemButton,
-  ListItemContent,
-  ListItemDecorator,
-  Tooltip,
-  Typography,
-  listItemDecoratorClasses,
-} from '@mui/joy'
-import React, { Fragment } from 'react'
-import Emoji from 'react-emoji-render'
-import { formatCount, formatDateTime } from './util'
+import { List, ListDivider, listItemDecoratorClasses } from '@mui/joy'
+import React, { forwardRef } from 'react'
+import { Virtuoso } from 'react-virtuoso'
+import GitHubRepoListItem from './GitHubRepoListItem'
 
 export interface Repo {
   id: number
@@ -33,47 +20,36 @@ interface GitHubRepoListProps {
 
 const GitHubRepoList: React.FC<GitHubRepoListProps> = ({ repos }) => {
   return (
-    <List
-      sx={{
-        '--ListItemDecorator-size': '3.5rem',
-        [`.${listItemDecoratorClasses.root}`]: {
-          alignSelf: 'start',
-        },
+    <Virtuoso
+      style={{ height: '100%' }}
+      components={{
+        // Header: () => <></>,
+        List: forwardRef(({ children, style }, ref) => (
+          <List
+            component="div"
+            style={style}
+            sx={{
+              '--ListItemDecorator-size': '3.5rem',
+              [`.${listItemDecoratorClasses.root}`]: {
+                alignSelf: 'start',
+              },
+            }}
+            ref={ref}
+          >
+            {children}
+          </List>
+        )),
       }}
-    >
-      {repos.map((repo, i) => (
-        <Fragment key={i}>
-          {i > 0 && <ListDivider inset="startContent" />}
-          <ListItem key={repo.id}>
-            <ListItemButton>
-              <ListItemDecorator>
-                <Avatar alt={repo.name}>
-                  <Book />
-                </Avatar>
-              </ListItemDecorator>
-              <ListItemContent>
-                <Typography>
-                  <Link overlay href={repo.html_url} target="_blank">
-                    {repo.full_name}
-                  </Link>
-                </Typography>
-
-                <Typography level="body2">
-                  <Emoji text={repo.description ?? ''} />
-                </Typography>
-
-                <Typography level="body3">
-                  ☆ {formatCount(repo?.stargazers_count ?? 0)} Updated{' '}
-                  <Tooltip title={formatDateTime(repo?.pushed_at ?? '', 'full')}>
-                    <Typography>{formatDateTime(repo?.pushed_at ?? '')}</Typography>
-                  </Tooltip>
-                </Typography>
-              </ListItemContent>
-            </ListItemButton>
-          </ListItem>
-        </Fragment>
-      ))}
-    </List>
+      data={repos}
+      computeItemKey={(i, repo) => repo.id ?? i}
+      itemContent={(i, repo) => (
+        <>
+          {i === 0 ? null : <ListDivider inset="startContent" />}
+          <GitHubRepoListItem repo={repo} />
+        </>
+      )}
+      endReached={() => console.debug('TO DO: fetch more!')}
+    />
   )
 }
 

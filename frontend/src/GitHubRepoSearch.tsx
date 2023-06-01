@@ -7,6 +7,17 @@ import { useSearchBox } from './useSearchBox'
 
 const baseApiUrl = new URL('https://demo.erwinv.app')
 
+const fetcher = async (url: string) => {
+  const res = await fetch(url)
+
+  if (!res.ok) {
+    const error = await res.json()
+    throw error
+  }
+
+  return res.json()
+}
+
 export default function GitHubRepoSearch() {
   const [page, setPage] = useState(1)
   const [searchText, searchBox] = useSearchBox()
@@ -15,19 +26,8 @@ export default function GitHubRepoSearch() {
 
   const apiUrl = new URL('/api/proxy/github/search/repositories', baseApiUrl)
   apiUrl.searchParams.set('q', searchText)
-  apiUrl.searchParams.set('per_page', `${10}`)
+  apiUrl.searchParams.set('per_page', `${20}`)
   apiUrl.searchParams.set('page', `${page}`)
-
-  const fetcher = async (url: string) => {
-    const res = await fetch(url)
-
-    if (!res.ok) {
-      const error = await res.json()
-      throw error
-    }
-
-    return res.json()
-  }
 
   const {
     data,
@@ -44,17 +44,22 @@ export default function GitHubRepoSearch() {
   const repos: Repo[] = data?.items ?? []
 
   return (
-    <Box position="relative">
-      {searchBox}
-      {isLoading ? <LinearProgress /> : <GitHubRepoList repos={repos} />}
-      {/* <Pagination
-        sx={{ display: 'flex', justifyContent: 'center' }}
-        size="large"
-        count={Math.ceil(Math.min(total, 1000) / 10)}
-        page={page}
-        onChange={(_, page) => setPage(page)}
-        disabled={error && !isPrevious}
-      /> */}
+    <Box
+      sx={{
+        height: '100vh',
+        display: 'grid',
+        gridTemplateRows: 'auto 1fr',
+        '> header': {
+          mt: 1,
+        },
+        '> main': {
+          height: '100%',
+          overflow: 'auto',
+        },
+      }}
+    >
+      <header>{searchBox}</header>
+      <main>{isLoading ? <LinearProgress /> : <GitHubRepoList repos={repos} />}</main>
       {/* <Snackbar open={!!error} autoHideDuration={60 * 1000}>
         <Alert
           severity="warning"
