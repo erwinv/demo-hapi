@@ -16,9 +16,10 @@ export interface Repo {
 
 interface GitHubRepoListProps {
   repos: Partial<Repo>[]
+  loadMore: () => void
 }
 
-const GitHubRepoList: React.FC<GitHubRepoListProps> = ({ repos }) => {
+const GitHubRepoList: React.FC<GitHubRepoListProps> = ({ repos, loadMore }) => {
   return (
     <Virtuoso
       style={{ height: '100%' }}
@@ -48,7 +49,7 @@ const GitHubRepoList: React.FC<GitHubRepoListProps> = ({ repos }) => {
           <GitHubRepoListItem repo={repo} />
         </>
       )}
-      endReached={() => console.debug('TO DO: fetch more!')}
+      endReached={loadMore}
     />
   )
 }
